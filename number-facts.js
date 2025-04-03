@@ -9,7 +9,7 @@
 
 //     *(Note: You’ll need to make multiple requests for this.)*
 
-fetch("http://numbersapi.com/300?json")
+fetch("http://numbersapi.com/3,30,300,3000?json")
   .then((response) => (json = response.json()))
   .then((json) => console.log(json))
   .catch(console.error);
