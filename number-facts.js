@@ -8,8 +8,22 @@
 //      Once you have them all, put them on the page. It’s okay if some of the facts are repeats.
 
 //     *(Note: You’ll need to make multiple requests for this.)*
+// const numberFacts = (number) => `http://numbersapi.com/${number}?json`;
 
-fetch("http://numbersapi.com/3,30,300,3000?json")
-  .then((response) => (json = response.json()))
-  .then((json) => console.log(json))
-  .catch(console.error);
+function numberFacts(...numbers) {
+  if (numbers.length > 100) {
+    throw new Error("Too many inputs! Maximum allowed is 100.");
+  }
+  const numbersString = numbers.join(",");
+
+  retrieveAndParse(numbersString);
+}
+
+function retrieveAndParse(numbersString) {
+  fetch(`http://numbersapi.com/${numbersString}?json`)
+    .then((response) => (json = response.json()))
+    .then((json) => console.log(json))
+    .catch(console.error);
+}
+
+numberFacts([3, 30, 300, 3000]);
