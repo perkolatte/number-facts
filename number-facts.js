@@ -17,31 +17,103 @@ document
     event.preventDefault();
     // Get number(s) input from user
     const numbersInput = document.getElementById("numberInput").value;
+    // Clean the input
+    let usableNumber = numbersInput.replace(/[^\d.,]/g, "");
+    // Split the input on commas, trim each number, and remove any empty items
+    const numbers = numbersInput
+      .split(",")
+      .map((number) => number.trim())
+      .filter((number) => number !== "");
 
-    // Check format
-
-    // Convert to string, remove whitespace/extraneous characters
-
-    // Add numbers to api url
-    const api = `http://numbersapi.com/${numbersInput}?json`;
-
-    fetch(api)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not OK.");
+    // Helper function: if the number contains "..", treat it as a range; otherwise, a single number.
+    function parseNumber(number) {
+      if (number.includes("..")) {
+        const parts = number.split("..").map(Number);
+        const [start, end] = parts;
+        const numbers = [];
+        // Generate an inclusive range from start to end
+        for (let i = start; i <= end; i++) {
+          numbers.push(i);
         }
-        return response.json();
-      })
-      .then((data) => {
+        return numbers;
+      } else {
+        return [Number(number)];
+      }
+    }
+
+    // // Validate input: if it's empty or not a valid number, show an error message.
+    // if (usableNumber === "" || isNaN(Number(usableNumber))) {
+    //   document.getElementById("results").textContent =
+    //     "Please enter a valid number.";
+    //   return;
+    // }
+
+    // Build array of numbers
+    const numbersArray = numbers.reduce(
+      (acc, number) => acc.concat(parseNumber(number)),
+      []
+    );
+
+    // Fetch 4 unique facts for a given number
+    function fetchNumberFacts(number) {
+      const apiUrl = `http://numbersapi.com/${number}?json`;
+      const uniqueFacts = new Set();
+
+      // Recursive function that fetches 4 unique facts
+      function fetchUnique(callCount = 0) {
+        ++callCount;
+        if (callCount > 20) {
+          return Promise.resolve(Array.from(uniqueFacts));
+        }
+        return fetch(apiUrl)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not OK.");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            if (data.text) {
+              uniqueFacts.add(data.text);
+            }
+            if (uniqueFacts.size < 5) {
+              return fetchUnique(callCount);
+            } else {
+              return Array.from(uniqueFacts);
+            }
+          });
+      }
+      return fetchUnique();
+    }
+
+    const allPromises = numbersArray.map((number) => {
+      return fetchNumberFacts(number).then((facts) => {
+        return { number: number, facts: facts };
+      });
+    });
+
+    Promise.all(allPromises)
+      .then((results) => {
         const resultsDiv = document.getElementById("results");
         resultsDiv.innerHTML = "";
-        Object.entries(data).forEach(([number, fact]) => {
-          const p = document.createElement("p");
-          p.textContent = `${number}: ${fact}`;
-          resultsDiv.appendChild(p);
+
+        results.forEach((result) => {
+          const h3 = document.createElement("h3");
+          h3.textContent = `Number: ${result.number}`;
+          resultsDiv.appendChild(h3);
+
+          result.facts.forEach((fact) => {
+            const p = document.createElement("p");
+            p.textContent = fact;
+            resultsDiv.appendChild(p);
+          });
         });
       })
-      .catch((error) => console.error("Fetch error: ", error));
+      .catch((error) => {
+        console.error("Fetch error: ", error);
+        document.getElementById("results").textContent =
+          "Error fetching facts.";
+      });
   });
 
 // function numberFacts(...numbers) {
