@@ -25,6 +25,13 @@ document
       .map((number) => number.trim())
       .filter((number) => number !== "");
 
+    // Edge case: No valid numbers input
+    if (numbers.length === 0) {
+      document.getElementById("results").textContent =
+        "Please provide one or more comma-separated numbers or ranges";
+      return;
+    }
+
     // Helper function: Generates an array for each range provided, passes single numbers through
     function parseNumber(number) {
       if (number.includes("..")) {
