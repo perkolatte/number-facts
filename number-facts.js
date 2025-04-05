@@ -20,12 +20,12 @@ document
     // Clean the input
     let usableNumber = numbersInput.replace(/[^\d.,]/g, "");
     // Split the input on commas, trim each number, and remove any empty items
-    const numbers = numbersInput
+    const numbers = usableNumber
       .split(",")
       .map((number) => number.trim())
       .filter((number) => number !== "");
 
-    // Helper function: if the number contains "..", treat it as a range; otherwise, a single number.
+    // Helper function: Generates an array for each range provided, passes single numbers through
     function parseNumber(number) {
       if (number.includes("..")) {
         const parts = number.split("..").map(Number);
@@ -41,20 +41,13 @@ document
       }
     }
 
-    // // Validate input: if it's empty or not a valid number, show an error message.
-    // if (usableNumber === "" || isNaN(Number(usableNumber))) {
-    //   document.getElementById("results").textContent =
-    //     "Please enter a valid number.";
-    //   return;
-    // }
-
-    // Build array of numbers
+    // Builds array of numbers
     const numbersArray = numbers.reduce(
       (acc, number) => acc.concat(parseNumber(number)),
       []
     );
 
-    // Fetch 4 unique facts for a given number
+    // Fetches 4 unique facts for a given number
     function fetchNumberFacts(number) {
       const apiUrl = `http://numbersapi.com/${number}?json`;
       const uniqueFacts = new Set();
