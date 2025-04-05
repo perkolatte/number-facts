@@ -5,11 +5,18 @@
     <title>Number Facts</title>
   </head>
   <body>
-    <h1>Get Number Facts</h1>
+    <h1>Number Facts</h1>
     <form id="factForm">
       <input type="text" id="numberInput" placeholder="1,2,3,4..8,9" required />
-      <button type="submit">Get Facts</button>
+      <button type="submit">Get Facts!</button>
     </form>
+    <!-- Progress bar for showing fetch progress -->
+    <progress
+      id="progressBar"
+      value="0"
+      max="100"
+      style="width: 100%"
+    ></progress>
     <div id="results"></div>
     <script src="number-facts.js"></script>
   </body>

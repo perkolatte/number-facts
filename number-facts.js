@@ -17,6 +17,12 @@ document
     // Prevent browser from reloading page on submit (default form submission)
     event.preventDefault();
 
+    // Immediately provide visual feedback: disable the submit button and show a loading message.
+    const submitButton = document.querySelector("#factForm button");
+    submitButton.disabled = true;
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML = "<p>Loading...</p>";
+
     // Get input from user
     const numbersInput = document.getElementById("numberInput").value;
 
@@ -56,6 +62,17 @@ document
       []
     );
 
+    // Initialize progress: total numbers to process
+    const totalNumbers = numbersArray.length;
+    let resolvedCount = 0;
+    updateProgress(0, totalNumbers);
+
+    // Function to update the progress bar.
+    function updateProgress(completed, total) {
+      const percent = (completed / total) * 100;
+      document.getElementById("progressBar").value = percent;
+    }
+
     // Fetch 4 unique facts for a given number from the Numbers API: http://numbersapi.com/#42
     function fetchNumberFacts(number) {
       const apiUrl = `http://numbersapi.com/${number}?json`;
@@ -91,7 +108,9 @@ document
     // Create a promise for each number that fetches its facts
     const allPromises = numbersArray.map((number) => {
       return fetchNumberFacts(number).then((facts) => {
-        return { number: number, facts: facts };
+        ++resolvedCount;
+        updateProgress(resolvedCount, totalNumbers);
+        return { number, facts };
       });
     });
 
@@ -121,6 +140,10 @@ document
         console.error("Fetch error: ", error);
         document.getElementById("results").textContent =
           "Error fetching facts.";
+      })
+      .finally(() => {
+        // Re-enable the submit button after processing is complete
+        submitButton.disabled = false;
       });
   });
 
