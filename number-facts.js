@@ -17,11 +17,16 @@ document
     // Prevent browser from reloading page on submit (default form submission)
     event.preventDefault();
 
-    // Immediately provide visual feedback: disable the submit button and show a loading message.
+    // Immediately provide visual feedback: make the submit button into a loading bar and change its text to 'Loading...'
     const submitButton = document.querySelector("#factForm button");
+    const originalButtonText = submitButton.textContent;
     submitButton.disabled = true;
+    // submitButton.style.backgroundColor = "transparent";
+    // submitButton.style.visibility = "hidden";
+    submitButton.textContent = "Loading...";
+
     const resultsDiv = document.getElementById("results");
-    resultsDiv.innerHTML = "<p>Loading...</p>";
+    // resultsDiv.innerHTML = "<p>Loading...</p>";
 
     // Get input from user
     const numbersInput = document.getElementById("numberInput").value;
@@ -37,6 +42,8 @@ document
     if (numbers.length === 0) {
       document.getElementById("results").textContent =
         "Please provide one or more comma-separated numbers or ranges";
+
+      submitButton.disabled = false;
       return;
     }
 
@@ -69,8 +76,16 @@ document
 
     // Function to update the progress bar.
     function updateProgress(completed, total) {
-      const percent = (completed / total) * 100;
-      document.getElementById("progressBar").value = percent;
+      const percent = Math.round((completed / total) * 100);
+      const progressBar = document.getElementById("submitButton");
+      if (progressBar) {
+        progressBar.style.width = percent + "%";
+        // Make it visible when progress starts
+        progressBar.style.opacity = percent > 0 ? 1 : 0;
+        progressBar.style.textAlign = "left";
+      } else {
+        console.error("Progress bar element not found.");
+      }
     }
 
     // Fetch 4 unique facts for a given number from the Numbers API: http://numbersapi.com/#42
@@ -124,7 +139,7 @@ document
 
         results.forEach((result) => {
           const h3 = document.createElement("h3");
-          h3.textContent = `Number: ${result.number}`;
+          h3.textContent = `${result.number}`;
           resultsDiv.appendChild(h3);
 
           result.facts.forEach((fact) => {
@@ -142,8 +157,10 @@ document
           "Error fetching facts.";
       })
       .finally(() => {
-        // Re-enable the submit button after processing is complete
         submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+        submitButton.style.backgroundColor = "#007aff";
+        submitButton.style.textAlign = "center";
       });
   });
 
