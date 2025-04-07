@@ -25,7 +25,7 @@ document
     // submitButton.style.visibility = "hidden";
     submitButton.textContent = "Loading...";
 
-    const resultsDiv = document.getElementById("results");
+    // const resultsDiv = document.getElementById("results");
     // resultsDiv.innerHTML = "<p>Loading...</p>";
 
     // Get input from user
@@ -37,6 +37,8 @@ document
       .split(",")
       .map((number) => number.trim())
       .filter((number) => number !== "");
+
+    // Clean up duplicates, including from ranges
 
     // Edge case: No valid numbers input, provide feedback
     if (numbers.length === 0) {

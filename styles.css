@@ -1,15 +1,12 @@
 h1 {
-  width: calc(100% - 40px); /* 20px on each side */
-  box-sizing: border-box; /* ensures padding is included within the width */
+  width: calc(100% - 40px);
+  box-sizing: border-box;
   position: relative;
   background-color: #f8f8f8;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
-  color: #333;
   margin: 0 auto; /* center h1 within its container */
   padding: 20px;
   text-align: center;
-  font-size: 5em; /* using a valid font-size property */
+  font-size: 5em;
 }
 
 /* Overall page styling */
