@@ -8,9 +8,8 @@
 //      Once you have them all, put them on the page. It’s okay if some of the facts are repeats.
 
 //     *(Note: You’ll need to make multiple requests for this.)*
-// const numberFacts = (number) => `http://numbersapi.com/${number}?json`;
 
-// Wait for submit button to be pressed, then process input
+// Wait for submit/"Get Facts" button to be pressed, then process input
 document
   .getElementById("factForm")
   .addEventListener("submit", function (event) {
@@ -21,12 +20,7 @@ document
     const submitButton = document.querySelector("#factForm button");
     const originalButtonText = submitButton.textContent;
     submitButton.disabled = true;
-    // submitButton.style.backgroundColor = "transparent";
-    // submitButton.style.visibility = "hidden";
     submitButton.textContent = "Loading...";
-
-    // const resultsDiv = document.getElementById("results");
-    // resultsDiv.innerHTML = "<p>Loading...</p>";
 
     // Get input from user
     const numbersInput = document.getElementById("numberInput").value;
@@ -165,21 +159,3 @@ document
         submitButton.style.textAlign = "center";
       });
   });
-
-// function numberFacts(...numbers) {
-//   if (numbers.length > 100) {
-//     throw new Error("Too many inputs! Maximum allowed is 100.");
-//   }
-//   const numbersString = numbers.join(",");
-
-//   retrieveAndParse(numbersString);
-// }
-
-// function retrieveAndParse(numbersString) {
-//   fetch()
-//     .then((response) => (json = response.json()))
-//     .then((json) => console.log(json))
-//     .catch(console.error);
-// }
-
-// numberFacts([3, 30, 300, 3000]);
