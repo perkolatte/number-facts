@@ -26,8 +26,19 @@ document
     const numbersInput = document.getElementById("numberInput").value;
 
     // Clean the input and convert to array
-    let usableNumber = numbersInput.replace(/[^\d.,]/g, "");
-    const numbers = usableNumber
+    let usableNumber = numbersInput.replace(/[^\d.,-]/g, "");
+    const normalizedInput = usableNumber
+      .replace(/\.{2,}/g, "..") // collapse 2+ periods to `..` for ranges
+      .replace(/-{2,}/g, "-") // collapse 2+ dashes to `-`
+      .replace(/,+/g, ",") // collapse multiple commas
+      .replace(/^,+|,+$/g, "") // remove leading/trailing commas
+      .replace(/(^|[^0-9])\.(?=[^0-9]|$)/g, "")
+      .replace(/(?<!\.)\.(?=\d)(?!\.)/g, "") // remove leading decimals not part of `..`
+      .replace(/(\.\.)\.(?=\.)*/g, "$1") // remove extra dots after valid range
+      .replace(/^\.+|\.+$/g, "") // remove leading/trailing dots
+      .replace(/(?<!\.)\.(?!\.)(?=,|$)/g, ""); // remove single trailing dots, keep valid `..`
+    document.getElementById("numberInput").value = normalizedInput;
+    const numbers = normalizedInput
       .split(",")
       .map((number) => number.trim())
       .filter((number) => number !== "");
@@ -40,6 +51,9 @@ document
         "Please provide one or more comma-separated numbers or ranges";
 
       submitButton.disabled = false;
+      submitButton.textContent = originalButtonText;
+      submitButton.style.backgroundColor = "#007aff";
+      submitButton.style.textAlign = "center";
       return;
     }
 
@@ -54,19 +68,68 @@ document
           numbers.push(i);
         }
         return numbers;
+      } else if (number.includes("-")) {
+        const parts = number.split("-").map(Number);
+        const [start, end] = parts;
+        const numbers = [];
+        // Generate an inclusive range from start to end
+        for (let i = start; i <= end; i++) {
+          numbers.push(i);
+        }
+        return numbers;
       } else {
         return [Number(number)];
       }
     }
 
     // Builds a flat array of numbers from individual numbers and arrays from ranges
-    const numbersArray = numbers.reduce(
-      (accumulator, number) => accumulator.concat(parseNumber(number)),
-      []
+    const numbersArray = numbers
+      .reduce(
+        (accumulator, number) => accumulator.concat(parseNumber(number)),
+        []
+      )
+      .filter(Number.isInteger); // Filter out non-integer values
+
+    const uniqueNumbersArray = Array.from(new Set(numbersArray)).sort(
+      (a, b) => a - b
     );
 
+    const condensed = [];
+    let start = uniqueNumbersArray[0];
+    let end = start;
+
+    for (let i = 1; i <= uniqueNumbersArray.length; i++) {
+      const current = uniqueNumbersArray[i];
+      if (current === end + 1) {
+        end = current;
+      } else {
+        if (start === end) {
+          condensed.push(`${start}`);
+        } else if (end === start + 1) {
+          condensed.push(`${start},${end}`);
+        } else {
+          condensed.push(`${start}..${end}`);
+        }
+        start = end = current;
+      }
+    }
+
+    document.getElementById("numberInput").value = condensed.join(",");
+
+    // Edge case: No valid integers input, provide feedback
+    if (uniqueNumbersArray.length === 0) {
+      document.getElementById("results").textContent =
+        "Please enter whole numbers or valid ranges (e.g., 3, 5..10, or 1-4).";
+
+      submitButton.disabled = false;
+      submitButton.textContent = originalButtonText;
+      submitButton.style.backgroundColor = "#007aff";
+      submitButton.style.textAlign = "center";
+      return;
+    }
+
     // Initialize progress: total numbers to process
-    const totalNumbers = numbersArray.length;
+    const totalNumbers = uniqueNumbersArray.length;
     let resolvedCount = 0;
     updateProgress(0, totalNumbers);
 
@@ -117,7 +180,7 @@ document
     }
 
     // Create a promise for each number that fetches its facts
-    const allPromises = numbersArray.map((number) => {
+    const allPromises = uniqueNumbersArray.map((number) => {
       return fetchNumberFacts(number).then((facts) => {
         ++resolvedCount;
         updateProgress(resolvedCount, totalNumbers);
@@ -144,6 +207,10 @@ document
             resultsDiv.appendChild(p);
           });
         });
+
+        submitButton.textContent = originalButtonText;
+        submitButton.style.backgroundColor = "#007aff";
+        submitButton.style.textAlign = "center";
       })
 
       // Log error and display generic error on page
@@ -154,8 +221,5 @@ document
       })
       .finally(() => {
         submitButton.disabled = false;
-        submitButton.textContent = originalButtonText;
-        submitButton.style.backgroundColor = "#007aff";
-        submitButton.style.textAlign = "center";
       });
   });
