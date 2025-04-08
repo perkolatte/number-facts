@@ -128,3 +128,72 @@ progress::-webkit-progress-value {
   transition: opacity 0.2s ease, width 0.2s ease;
   z-index: -1; /* behind the button text */
 }
+
+.button-wrapper {
+  position: relative;
+  height: 48px; /* Match button height */
+  width: 100%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 16px;
+  box-sizing: border-box;
+}
+
+#submitButton {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  transition: opacity 0.5s ease;
+}
+
+#progressBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background: #007aff;
+  border-radius: 6px;
+  transition: width 0.3s ease, color 0.3s ease;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 16px;
+  color: #fff;
+  font-weight: bold;
+  overflow: hidden;
+  width: 100%;
+  max-height: 100%;
+  box-sizing: border-box;
+  z-index: 1;
+  pointer-events: none;
+}
+
+#loadingText {
+  mix-blend-mode: difference;
+  color: white;
+  transition: opacity 0.3s ease;
+}
+
+.text-white,
+.text-blue {
+  font-weight: bold;
+  white-space: nowrap;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  font-size: 16px;
+}
+
+.text-blue {
+  color: #007aff;
+}
+
+.text-white {
+  color: white;
+}

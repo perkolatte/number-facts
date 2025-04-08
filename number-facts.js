@@ -18,9 +18,14 @@ document
 
     // Immediately provide visual feedback: make the submit button into a loading bar and change its text to 'Loading...'
     const submitButton = document.querySelector("#factForm button");
+    const progressBar = document.getElementById("progressBar");
     const originalButtonText = submitButton.textContent;
+    submitButton.style.transition = "opacity 0s ease";
     submitButton.disabled = true;
-    submitButton.textContent = "Loading...";
+    submitButton.style.opacity = "0"; // Hide button text and background
+    progressBar.textContent = "Loading...";
+
+    submitButton.style.opacity = "0"; // hide the button so the progress bar shows
 
     // Get input from user
     const numbersInput = document.getElementById("numberInput").value;
@@ -50,6 +55,7 @@ document
       document.getElementById("results").textContent =
         "Please provide one or more comma-separated numbers or ranges";
 
+      submitButton.style.transition = "opacity 0.5s ease";
       submitButton.disabled = false;
       submitButton.textContent = originalButtonText;
       submitButton.style.backgroundColor = "#007aff";
@@ -134,16 +140,24 @@ document
     updateProgress(0, totalNumbers);
 
     // Function to update the progress bar.
+    // function updateProgress(completed, total) {
+    //   const percent = Math.round((completed / total) * 100);
+    //   const progressBar = document.getElementById("submitButton");
+    //   if (progressBar) {
+    //     progressBar.style.background = `linear-gradient(to right, #007aff ${percent}%, #ffffff ${percent}%)`;
+    //     // Make it visible when progress starts
+    //     progressBar.style.opacity = percent > 0 ? 1 : 0;
+    //     progressBar.style.textAlign = "left";
+    //   } else {
+    //     console.error("Progress bar element not found.");
+    //   }
+    // }
+
     function updateProgress(completed, total) {
       const percent = Math.round((completed / total) * 100);
-      const progressBar = document.getElementById("submitButton");
+      // const progressBar = document.getElementById("progressBar");
       if (progressBar) {
         progressBar.style.width = percent + "%";
-        // Make it visible when progress starts
-        progressBar.style.opacity = percent > 0 ? 1 : 0;
-        progressBar.style.textAlign = "left";
-      } else {
-        console.error("Progress bar element not found.");
       }
     }
 
@@ -209,8 +223,10 @@ document
         });
 
         submitButton.textContent = originalButtonText;
+        submitButton.style.color = "#ffffff"; // reset text color
         submitButton.style.backgroundColor = "#007aff";
         submitButton.style.textAlign = "center";
+        submitButton.style.opacity = "1"; // show the button again
       })
 
       // Log error and display generic error on page
@@ -218,8 +234,10 @@ document
         console.error("Fetch error: ", error);
         document.getElementById("results").textContent =
           "Error fetching facts.";
+        submitButton.style.opacity = "1";
       })
       .finally(() => {
         submitButton.disabled = false;
+        submitButton.style.opacity = "1"; // show the button again
       });
   });

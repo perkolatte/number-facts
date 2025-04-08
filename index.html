@@ -15,9 +15,15 @@
           placeholder="1,2,3,4..8,9"
           required
         />
-        <button type="submit" id="submitButton">
-          <span id="buttonText">Get Facts</span>
-        </button>
+        <div class="button-wrapper">
+          <span class="text-blue">Loading...</span>
+          <div id="progressBar">
+            <span class="text-white">Loading...</span>
+          </div>
+          <button type="submit" id="submitButton">
+            <span id="buttonText">Get Facts</span>
+          </button>
+        </div>
       </form>
       <div id="results"></div>
     </div>
