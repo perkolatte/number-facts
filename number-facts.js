@@ -139,23 +139,8 @@ document
     let resolvedCount = 0;
     updateProgress(0, totalNumbers);
 
-    // Function to update the progress bar.
-    // function updateProgress(completed, total) {
-    //   const percent = Math.round((completed / total) * 100);
-    //   const progressBar = document.getElementById("submitButton");
-    //   if (progressBar) {
-    //     progressBar.style.background = `linear-gradient(to right, #007aff ${percent}%, #ffffff ${percent}%)`;
-    //     // Make it visible when progress starts
-    //     progressBar.style.opacity = percent > 0 ? 1 : 0;
-    //     progressBar.style.textAlign = "left";
-    //   } else {
-    //     console.error("Progress bar element not found.");
-    //   }
-    // }
-
     function updateProgress(completed, total) {
-      const percent = Math.round((completed / total) * 100);
-      // const progressBar = document.getElementById("progressBar");
+      const percent = Math.min(100, Math.round((completed / total) * 100));
       if (progressBar) {
         progressBar.style.width = percent + "%";
       }
@@ -193,51 +178,88 @@ document
       return fetchUnique();
     }
 
-    // Create a promise for each number that fetches its facts
-    const allPromises = uniqueNumbersArray.map((number) => {
-      return fetchNumberFacts(number).then((facts) => {
-        ++resolvedCount;
-        updateProgress(resolvedCount, totalNumbers);
-        return { number, facts };
-      });
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML = "";
+
+    const fetchPromises = uniqueNumbersArray.map((number) => {
+      return fetchNumberFacts(number)
+        .then((facts) => {
+          return { number, facts };
+        })
+        .catch((error) => {
+          console.error("Fetch error for number:", number, error);
+          return { number, facts: ["Error fetching facts."] };
+        });
     });
 
-    // Wait for all promises to resolve.
-    Promise.all(allPromises)
+    const resultsMap = new Map();
 
-      // Clear results div, create and display a heading and p tag for each number
-      .then((results) => {
-        const resultsDiv = document.getElementById("results");
-        resultsDiv.innerHTML = "";
+    function processFacts() {
+      const firstFive = fetchPromises.slice(0, 5);
+      const rest = fetchPromises.slice(5);
 
-        results.forEach((result) => {
-          const h3 = document.createElement("h3");
-          h3.textContent = `${result.number}`;
-          resultsDiv.appendChild(h3);
+      firstFive
+        .reduce((chain, promise) => {
+          return chain.then(() => {
+            return promise.then(({ number, facts }) => {
+              resultsMap.set(number, { number, facts });
+              ++resolvedCount;
+              updateProgress(resolvedCount, totalNumbers);
 
-          result.facts.forEach((fact) => {
-            const p = document.createElement("p");
-            p.textContent = fact;
-            resultsDiv.appendChild(p);
+              const h3 = document.createElement("h3");
+              h3.textContent = `${number}`;
+              resultsDiv.appendChild(h3);
+
+              facts.forEach((fact) => {
+                const p = document.createElement("p");
+                p.textContent = fact;
+                resultsDiv.appendChild(p);
+              });
+            });
           });
-        });
+        }, Promise.resolve())
+        .then(() => {
+          return Promise.all(
+            rest.map((promise) =>
+              promise.then(({ number, facts }) => {
+                resultsMap.set(number, { number, facts });
+                ++resolvedCount;
+                updateProgress(resolvedCount, totalNumbers);
 
+                // Sort all current results
+                const sorted = Array.from(resultsMap.values()).sort(
+                  (a, b) => a.number - b.number
+                );
+
+                resultsDiv.innerHTML = "";
+                sorted.forEach(({ number, facts }) => {
+                  const h3 = document.createElement("h3");
+                  h3.textContent = `${number}`;
+                  resultsDiv.appendChild(h3);
+
+                  facts.forEach((fact) => {
+                    const p = document.createElement("p");
+                    p.textContent = fact;
+                    resultsDiv.appendChild(p);
+                  });
+                });
+              })
+            )
+          );
+        });
+    }
+
+    processFacts()
+      .then(() => {
         submitButton.textContent = originalButtonText;
-        submitButton.style.color = "#ffffff"; // reset text color
+        submitButton.style.color = "#ffffff";
         submitButton.style.backgroundColor = "#007aff";
         submitButton.style.textAlign = "center";
-        submitButton.style.opacity = "1"; // show the button again
-      })
-
-      // Log error and display generic error on page
-      .catch((error) => {
-        console.error("Fetch error: ", error);
-        document.getElementById("results").textContent =
-          "Error fetching facts.";
         submitButton.style.opacity = "1";
+        progressBar.style.opacity = "0";
       })
       .finally(() => {
         submitButton.disabled = false;
-        submitButton.style.opacity = "1"; // show the button again
+        submitButton.style.opacity = "1";
       });
   });
