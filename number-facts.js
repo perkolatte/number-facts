@@ -1,18 +1,11 @@
-// ## **Part 1: Number Facts**
-
-// 1. Make a request to the Numbers API (http://numbersapi.com/) to get a fact about your favorite number.
-//      (Make sure you get back JSON by including the ***json*** query key, specific to this API. [Details](http://numbersapi.com/#json).
-// 2. Figure out how to get data on multiple numbers in a single request.
-//      Make that request and when you get the data back, put all of the number facts on the page.
-// 3. Use the API to get 4 facts on your favorite number.
-//      Once you have them all, put them on the page. It’s okay if some of the facts are repeats.
-
-//     *(Note: You’ll need to make multiple requests for this.)*
+// ## Number Facts
+// Fetch facts from the Numbers API and display them on the page.
 
 // Clean the input and convert to array
 function normalizeInput(input) {
-  let usableNumber = input.replace(/[^\d.,-]/g, "");
-  const normalizedInput = usableNumber
+  // Clean and normalize the input with a chain of regex replacements.
+  let normalized = input
+    .replace(/[^\d.,-]/g, "")
     .replace(/\.{2,}/g, "..") // collapse 2+ periods to `..` for ranges
     .replace(/-{2,}/g, "-") // collapse 2+ dashes to `-`
     .replace(/,+/g, ",") // collapse multiple commas
@@ -22,21 +15,23 @@ function normalizeInput(input) {
     .replace(/(\.\.)\.(?=\.)*/g, "$1") // remove extra dots after valid range
     .replace(/^\.+|\.+$/g, "") // remove leading/trailing dots
     .replace(/(?<!\.)\.(?!\.)(?=,|$)/g, ""); // remove single trailing dots, keep valid `..`
-  document.getElementById("numberInput").value = normalizedInput;
 
-  const tokens = normalizedInput.split(",");
+  // Process tokens to ensure ranges with multiple ".." are reduced to only use the first and last parts.
+  const tokens = normalized.split(",");
   const fixedTokens = tokens.map((token) => {
     if (token.indexOf("..") !== -1) {
       const parts = token.split("..");
-      if (parts.length > 2) {
-        return parts[0] + ".." + parts[parts.length - 1];
-      }
+      return parts.length > 2
+        ? parts[0] + ".." + parts[parts.length - 1]
+        : token;
     }
     return token;
   });
-  const finalNormalizedInput = fixedTokens.join(",");
-  document.getElementById("numberInput").value = finalNormalizedInput;
-  return finalNormalizedInput;
+  normalized = fixedTokens.join(",");
+
+  // Update the input value once after all normalization is done.
+  document.getElementById("numberInput").value = normalized;
+  return normalized;
 }
 
 // Wait for submit/"Get Facts" button to be pressed, then process input
@@ -83,23 +78,21 @@ document
     // Helper function: Generate an array for each range provided, pass single numbers through
     function parseNumber(number) {
       if (number.includes("..")) {
-        const parts = number.split("..").map(Number);
-        const [start, end] = parts;
-        const numbers = [];
+        const [start, end] = number.split("..").map(Number);
+        const result = [];
         // Generate an inclusive range from start to end
         for (let i = start; i <= end; i++) {
-          numbers.push(i);
+          result.push(i);
         }
-        return numbers;
+        return result;
       } else if (number.includes("-")) {
-        const parts = number.split("-").map(Number);
-        const [start, end] = parts;
-        const numbers = [];
+        const [start, end] = number.split("-").map(Number);
+        const result = [];
         // Generate an inclusive range from start to end
         for (let i = start; i <= end; i++) {
-          numbers.push(i);
+          result.push(i);
         }
-        return numbers;
+        return result;
       } else {
         return [Number(number)];
       }
