@@ -9,6 +9,36 @@
 
 //     *(Note: You’ll need to make multiple requests for this.)*
 
+// Clean the input and convert to array
+function normalizeInput(input) {
+  let usableNumber = input.replace(/[^\d.,-]/g, "");
+  const normalizedInput = usableNumber
+    .replace(/\.{2,}/g, "..") // collapse 2+ periods to `..` for ranges
+    .replace(/-{2,}/g, "-") // collapse 2+ dashes to `-`
+    .replace(/,+/g, ",") // collapse multiple commas
+    .replace(/^,+|,+$/g, "") // remove leading/trailing commas
+    .replace(/(^|[^0-9])\.(?=[^0-9]|$)/g, "")
+    .replace(/(?<!\.)\.(?=\d)(?!\.)/g, "") // remove leading decimals not part of `..`
+    .replace(/(\.\.)\.(?=\.)*/g, "$1") // remove extra dots after valid range
+    .replace(/^\.+|\.+$/g, "") // remove leading/trailing dots
+    .replace(/(?<!\.)\.(?!\.)(?=,|$)/g, ""); // remove single trailing dots, keep valid `..`
+  document.getElementById("numberInput").value = normalizedInput;
+
+  const tokens = normalizedInput.split(",");
+  const fixedTokens = tokens.map((token) => {
+    if (token.indexOf("..") !== -1) {
+      const parts = token.split("..");
+      if (parts.length > 2) {
+        return parts[0] + ".." + parts[parts.length - 1];
+      }
+    }
+    return token;
+  });
+  const finalNormalizedInput = fixedTokens.join(",");
+  document.getElementById("numberInput").value = finalNormalizedInput;
+  return finalNormalizedInput;
+}
+
 // Wait for submit/"Get Facts" button to be pressed, then process input
 document
   .getElementById("factForm")
@@ -30,25 +60,12 @@ document
     // Get input from user
     const numbersInput = document.getElementById("numberInput").value;
 
-    // Clean the input and convert to array
-    let usableNumber = numbersInput.replace(/[^\d.,-]/g, "");
-    const normalizedInput = usableNumber
-      .replace(/\.{2,}/g, "..") // collapse 2+ periods to `..` for ranges
-      .replace(/-{2,}/g, "-") // collapse 2+ dashes to `-`
-      .replace(/,+/g, ",") // collapse multiple commas
-      .replace(/^,+|,+$/g, "") // remove leading/trailing commas
-      .replace(/(^|[^0-9])\.(?=[^0-9]|$)/g, "")
-      .replace(/(?<!\.)\.(?=\d)(?!\.)/g, "") // remove leading decimals not part of `..`
-      .replace(/(\.\.)\.(?=\.)*/g, "$1") // remove extra dots after valid range
-      .replace(/^\.+|\.+$/g, "") // remove leading/trailing dots
-      .replace(/(?<!\.)\.(?!\.)(?=,|$)/g, ""); // remove single trailing dots, keep valid `..`
-    document.getElementById("numberInput").value = normalizedInput;
+    normalizedInput = normalizeInput(numbersInput);
+
     const numbers = normalizedInput
       .split(",")
       .map((number) => number.trim())
       .filter((number) => number !== "");
-
-    // Clean up duplicates, including from ranges
 
     // Edge case: No valid numbers input, provide feedback
     if (numbers.length === 0) {
@@ -198,7 +215,7 @@ document
       const firstFive = fetchPromises.slice(0, 5);
       const rest = fetchPromises.slice(5);
 
-      firstFive
+      return firstFive
         .reduce((chain, promise) => {
           return chain.then(() => {
             return promise.then(({ number, facts }) => {
@@ -246,6 +263,11 @@ document
               })
             )
           );
+        })
+        .catch((error) => {
+          console.error("Error in processFacts:", error);
+          // Return resolved promise to allow final .then() after processFacts() to run
+          return Promise.resolve();
         });
     }
 
