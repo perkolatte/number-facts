@@ -1,12 +1,59 @@
-h1 {
+/* h1 {
   width: calc(100% - 40px);
   box-sizing: border-box;
   position: relative;
   background-color: #f8f8f8;
   margin: 0 auto; /* center h1 within its container */
-  padding: 20px;
+/* padding: 20px;
   text-align: center;
   font-size: 5em;
+} */
+
+/* h1 {
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 600px;
+  box-sizing: border-box;
+  background-color: #f8f8f8;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+  font-size: 5em; /* Large for desktops */
+/* } */
+
+/* 
+  @media (max-width: 600px) {
+  h1 {
+    font-size: 3em; /* Scale down for smaller screens */
+/* } 
+*/
+
+#h1-div {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 20px; /* Add horizontal padding here */
+  text-align: center;
+  box-sizing: border-box; /* Just in case */
+}
+
+h1 {
+  white-space: wrap;
+  /* overflow: hidden; */
+  /* Let width be 100% so it lines up with .container, 
+     and remove any local max-width if you want it fluid */
+  max-width: 600px;
+  box-sizing: border-box;
+  background-color: #f8f8f8;
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+
+  /* Fluid font-size: 
+     - Min size: 2rem 
+     - Preferred growth: 8vw 
+     - Max size: 5rem (or 6rem, your preference) 
+  */
+  font-size: clamp(2.25em, 8vw, 4em);
 }
 
 /* Overall page styling */
